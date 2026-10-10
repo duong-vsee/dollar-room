@@ -71,6 +71,13 @@ li{margin:4px 0;font-size:14px}
 .furn li:hover,.furn li.hl{background:#EEF3F8}
 .sw{width:14px;height:14px;border-radius:3px;border:1.5px solid;flex:none}
 .furn small{color:var(--muted);margin-left:auto;white-space:nowrap;padding-left:8px}
+.gallery{margin-top:28px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+.gallery h3{margin:0 0 4px}
+.gallery .hint{margin:0 0 14px;color:var(--muted);font-size:13px}
+.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:16px}
+.gal-grid figure{margin:0}
+.gal-grid img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;border:1px solid var(--line);background:var(--floor)}
+.gal-grid figcaption{font-size:13px;color:var(--muted);margin-top:6px}
 .safety{margin-top:28px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
 .scale{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:4px}
 .scale i{display:block;height:5px;background:var(--ink)}
@@ -123,6 +130,12 @@ table.spec td:last-child{text-align:right;font-weight:600;white-space:nowrap}
   </div>
 
   <div class="grid" id="grid"></div>
+
+  <section class="gallery" id="gallery" hidden>
+    <h3>Ảnh tham khảo</h3>
+    <p class="hint">Bấm vào ảnh để xem cỡ lớn.</p>
+    <div class="gal-grid" id="gal-grid"></div>
+  </section>
 
   <section class="safety">
     <h3>Tủ quần áo đề xuất cho 2 bé, dùng đến 15 tuổi</h3>
@@ -711,6 +724,20 @@ document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click'
   grid.querySelectorAll('.card').forEach(c => { c.hidden = v !== 'all' && c.dataset.id !== v; });
   rescale();
 }));
+// Ảnh tham khảo: danh sách nằm trong images/images.json, ảnh trong thư mục images/.
+fetch('images/images.json').then(r => r.ok ? r.json() : []).then(list => {
+  const grid = document.getElementById('gal-grid');
+  list.forEach(it => {
+    const src = 'images/' + encodeURIComponent(it.file);
+    const fig = document.createElement('figure');
+    const a = document.createElement('a'); a.href = src; a.target = '_blank'; a.rel = 'noopener';
+    const img = document.createElement('img'); img.src = src; img.alt = it.caption || it.file; img.loading = 'lazy';
+    a.appendChild(img); fig.appendChild(a);
+    if (it.caption) { const c = document.createElement('figcaption'); c.textContent = it.caption; fig.appendChild(c); }
+    grid.appendChild(fig);
+  });
+  if (list.length) document.getElementById('gallery').hidden = false;
+}).catch(() => {});
 </script>
 </body>
 </html>

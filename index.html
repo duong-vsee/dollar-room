@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phòng Ngủ Cho Bé</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+:root{
+  --bg:#FBFAF7; --card:#FFFFFF; --ink:#1F2A33; --muted:#55606B; --line:#E3E1DA;
+  --floor:#E6EDF3; --wall:#1F2A33; --win:#2F6DAE;
+  --bed:#EBAA90; --bed-b:#9A5A3F;
+  --table:#D7B47A; --table-b:#8C6A33;
+  --stool:#A57B42;
+  --wardrobe:#E8D29E; --wardrobe-b:#8C6A33;
+  --shelf:#A9CCAE; --shelf-b:#5E8A65;
+  --rug:#F3EBD2; --rug-b:#C2AA6A;
+  --stairs:#C99A6B; --stairs-b:#7A5530;
+  --accent:#2F6DAE; --warn:#A3321F;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Be Vietnam Pro',system-ui,sans-serif;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto;padding:32px 16px 56px}
+header h1{margin:0 0 6px;font-size:30px}
+header p{margin:0;color:var(--muted)}
+.seg{display:inline-flex;margin:22px 0 26px;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:4px;gap:4px;flex-wrap:wrap}
+.seg button{font:inherit;font-weight:600;border:0;background:transparent;color:var(--muted);padding:10px 16px;border-radius:7px;cursor:pointer;min-height:44px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:24px}
+.grid.single{grid-template-columns:minmax(0,860px)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+.card.rec{border:2px solid var(--accent)}
+.badge{display:inline-block;background:var(--accent);color:#fff;font-size:12px;font-weight:600;padding:2px 10px;border-radius:99px;margin-bottom:8px}
+.card h2{margin:0;font-size:21px}
+.card .tag{margin:4px 0 18px;color:var(--muted);font-size:14px}
+.plan-wrap{position:relative;padding:28px 10px 34px 34px}
+.room{position:relative;width:100%;aspect-ratio:4/3.2;background:var(--floor);outline:8px solid var(--wall);
+  background-image:linear-gradient(rgba(47,109,174,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(47,109,174,.08) 1px,transparent 1px);
+  background-size:12.5% 15.625%}
+.window{position:absolute;top:-8px;height:8px;background:#fff;border-top:3px solid var(--win);border-bottom:3px solid var(--win)}
+.doorgap{position:absolute;bottom:-8px;height:8px;background:var(--card)}
+.swing{position:absolute;border-top:2px dashed var(--muted);border-left:2px dashed var(--muted);border-top-left-radius:100%}
+.leaf{position:absolute;width:3px;background:var(--muted)}
+.lbl{position:absolute;font-size:12px;color:var(--muted);white-space:nowrap}
+.dim{position:absolute;font-size:13px;font-weight:700}
+.item{position:absolute;border:2px solid;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2px;overflow:hidden;transition:box-shadow .15s}
+.item b{font-size:clamp(10px,1.4vw,14px);line-height:1.2}
+.item span{font-size:clamp(9px,1vw,11px);opacity:.8;line-height:1.2}
+.item.round{border-radius:50%}
+.item.rug{border-style:dashed;border-radius:12px}
+.item.hl{box-shadow:0 0 0 3px var(--accent);z-index:5}
+.gap{position:absolute;background:var(--warn);width:2px}
+.gap-l{position:absolute;font-size:11px;font-weight:700;color:var(--warn);white-space:nowrap}
+.k-bed{background:var(--bed);border-color:var(--bed-b)}
+.k-table{background:var(--table);border-color:var(--table-b)}
+.k-stool{background:var(--stool);border-color:#6E5029}
+.k-wardrobe{background:var(--wardrobe);border-color:var(--wardrobe-b)}
+.k-shelf{background:var(--shelf);border-color:var(--shelf-b)}
+.k-rug{background:var(--rug);border-color:var(--rug-b)}
+.k-stairs{background:repeating-linear-gradient(0deg,var(--stairs) 0 calc(25% - 2px),var(--stairs-b) calc(25% - 2px) 25%);border-color:var(--stairs-b);color:#fff}
+.k-stairs.dx{background:repeating-linear-gradient(90deg,var(--stairs) 0 calc(25% - 2px),var(--stairs-b) calc(25% - 2px) 25%)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:14px}
+h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 8px}
+ul{margin:0;padding-left:18px}
+li{margin:4px 0;font-size:14px}
+.furn{list-style:none;padding:0}
+.furn li{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:6px;cursor:default}
+.furn li:hover,.furn li.hl{background:#EEF3F8}
+.sw{width:14px;height:14px;border-radius:3px;border:1.5px solid;flex:none}
+.furn small{color:var(--muted);margin-left:auto;white-space:nowrap;padding-left:8px}
+.safety{margin-top:28px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+.scale{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:4px}
+.scale i{display:block;height:5px;background:var(--ink)}
+
+/* side elevation of the bunk */
+.elev-block{margin-top:22px;border-top:1px solid var(--line);padding-top:18px}
+.elev-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;align-items:start}
+.elev{position:relative;width:100%;background:#F7F5EF;border-radius:8px;overflow:hidden}
+.e{position:absolute}
+.e-ceil{background:repeating-linear-gradient(45deg,#1F2A33 0 2px,#E9E6DD 2px 8px)}
+.e-floor{background:#1F2A33}
+.e-post{background:#8C6A33}
+.e-deck{background:#8C6A33}
+.e-mat{background:#F6E1D6;border:1.5px solid #9A5A3F;border-radius:3px}
+.e-rail{border:2px solid #8C6A33;border-radius:2px;background:repeating-linear-gradient(90deg,transparent 0 12px,#8C6A33 12px 15px)}
+.e-step{background:var(--stairs);border:1.5px solid var(--stairs-b);opacity:.95}
+.e-step::after{content:"";position:absolute;left:30%;right:30%;top:40%;height:3px;border-radius:2px;background:var(--stairs-b)}
+.e-tick{height:0;border-top:1px dashed #8A949E}
+.e-txt{font-size:clamp(9px,1.05vw,12px);white-space:nowrap;transform:translateY(-50%);color:var(--ink)}
+.e-txt b{font-weight:700}
+.e-vline{width:2px;background:var(--accent)}
+.e-vtxt{font-size:clamp(9px,1.05vw,12px);font-weight:700;color:var(--accent);transform:translateY(-50%);white-space:nowrap}
+.e-cap{font-size:clamp(9px,1vw,11px);color:var(--muted);white-space:nowrap}
+table.spec{width:100%;border-collapse:collapse;font-size:14px}
+table.spec td{padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+table.spec td:last-child{text-align:right;font-weight:600;white-space:nowrap}
+.v3d-block{margin-top:18px}
+.v3d-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.v3d-head small{color:var(--muted);font-size:12px}
+.v3d{position:relative;height:440px;border-radius:10px;overflow:hidden;background:#F4F1EA;touch-action:none}
+.v3d canvas{display:block}
+.v3d .msg{padding:20px;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Phòng ngủ cho bé: 6 phương án</h1>
+    <p>Phòng 4.0 × 3.2 m, trần 2.8 m. Cửa sổ và cửa ra vào đúng vị trí đã đo. Dành cho 1–2 bé từ 2 đến 6 tuổi. Mọi bản vẽ đều theo tỉ lệ.</p>
+  </header>
+
+  <div class="seg" role="group" aria-label="Chế độ xem">
+    <button type="button" data-view="all" aria-pressed="true">Xem tất cả</button>
+    <button type="button" data-view="a" aria-pressed="false">A · Giường lớn</button>
+    <button type="button" data-view="b" aria-pressed="false">B · Cầu thang dọc tường</button>
+    <button type="button" data-view="c" aria-pressed="false">C · Cầu thang ngang</button>
+    <button type="button" data-view="d" aria-pressed="false">D · Dọc tường, 5 bậc</button>
+    <button type="button" data-view="e" aria-pressed="false">E · Ngang, 5 bậc</button>
+    <button type="button" data-view="f" aria-pressed="false">F · Như E + kệ ra bàn</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <section class="safety">
+    <h3>Tủ quần áo đề xuất cho 2 bé, dùng đến 15 tuổi</h3>
+    <table class="spec">
+      <tr><td>Kích thước: mỗi bé một nửa rộng 0.8 m. Phía trên 0.4 m là hộc đựng chăn mền, đồ trái mùa.</td><td>1.6 × 0.6 × 2.4 m</td></tr>
+      <tr><td>Độ sâu 0.6 m: móc áo người lớn rộng 0.45 m, nên sâu dưới 0.55 m là áo bị cọ cánh.</td><td>sâu 0.6 m</td></tr>
+      <tr><td>Cánh mở: 4 cánh 0.4 m, giảm chấn chống kẹp tay. Cánh mở chiếm khoảng 0.4 m trước tủ.</td><td>4 cánh</td></tr>
+      <tr><td>Bé 2–8 tuổi: mỗi nửa có 2 thanh treo cao khoảng 1.0 m và 1.9 m (bé tự lấy đồ ở thanh dưới), thêm 2 ngăn kéo dưới cùng.</td><td>2 thanh treo</td></tr>
+      <tr><td>Bé 9–15 tuổi: bỏ thanh dưới, nâng thanh trên lên khoảng 1.7 m để treo đồ dài (áo khoác, váy). Cần đục lỗ vách sẵn để dời thanh treo và kệ.</td><td>1 thanh treo</td></tr>
+      <tr><td>An toàn: bắt vít vào tường, không gắn gương kính lên cánh khi bé còn nhỏ.</td><td>bắt vít</td></tr>
+    </table>
+    <p style="font-size:13px;color:var(--muted);margin:10px 0 18px">Tủ đặt ở tường phải, từ góc cửa sổ dài 1.6 m. Cánh cửa ra vào vẫn mở hết. Trần 2.8 m nên có thể đóng kịch trần (2.7 m) để thêm hộc trên.</p>
+    <h3>Áp dụng cho mọi phương án</h3>
+    <ul>
+      <li>Bắt vít tủ, kệ và giường tầng vào tường. Đồ đạc bị lật đổ là nguy hiểm lớn nhất ở tuổi này.</li>
+      <li>Không đặt đồ bé có thể trèo lên sát cửa sổ. Nên dùng rèm không dây kéo.</li>
+      <li>Chọn đồ thấp: bàn cao khoảng 50 cm, ghế đẩu khoảng 28 cm. Khi bé 5–6 tuổi thì nâng chân bàn lên.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+const ROOM = { w: 4.0, h: 3.2, win: [1.35, 2.65], door: [2.8, 3.7] };
+
+const OPTIONS = [
+  {
+    id: 'a',
+    name: 'A · Một giường lớn sát sàn',
+    tag: 'Một giường thấp 1.6 m cho 2 bé ngủ chung, hoặc 1 bé ngủ cùng bố mẹ.',
+    items: [
+      { k: 'bed', label: 'Giường thấp', dim: '1.6 × 2.0 m', x: 0.05, y: 0.05, w: 1.6, h: 2.0 },
+      { k: 'table', label: 'Bàn', dim: '0.8 × 0.6 m', x: 1.85, y: 0.08, w: 0.8, h: 0.6 },
+      { k: 'stool', label: '', dim: '', x: 1.95, y: 0.76, w: 0.28, h: 0.28, round: true, list: false },
+      { k: 'stool', label: '', dim: '', x: 2.27, y: 0.76, w: 0.28, h: 0.28, round: true, list: '2 ghế đẩu', ldim: 'Ø 0.28 m' },
+      { k: 'wardrobe', face: 'x-', label: 'Tủ quần áo', dim: '1.6 × 0.6 · cao 2.4', x: 3.38, y: 0.05, w: 0.6, h: 1.6, hh: 2.4, doors: 4, ldim: '1.6 × 0.6 m · cao 2.4 m · chia đôi cho 2 bé' },
+      { k: 'rug', label: 'Thảm chơi', dim: '1.1 × 1.2 m', x: 2.2, y: 1.0, w: 1.1, h: 1.2 },
+      { k: 'shelf', label: 'Kệ đồ chơi', dim: '1.2 × 0.35', x: 0.1, y: 2.83, w: 1.2, h: 0.35, face: 'z-' },
+    ],
+    gap: { x: 0.9, y1: 2.05, y2: 2.83, text: '0.78 m' },
+    pros: [
+      'Giường thấp nên không cần thành chắn và không sợ bé ngã.',
+      'Lối đi từ cửa vào giường thông thoáng, thảm nằm ngoài vùng cánh cửa mở.',
+      'Bàn nhận ánh sáng từ cửa sổ, ghế cất gọn dưới bàn.',
+    ],
+    watch: [
+      'Hai bé ngủ chung dễ đánh thức nhau.',
+    ],
+  },
+  {
+    id: 'b',
+    badge: 'Giường tầng · cầu thang dọc tường',
+    name: 'B · Giường tầng, cầu thang dọc tường',
+    tag: 'Giống phương án C nhưng cầu thang xoay 90°, áp hẳn vào tường trái nối tiếp cuối giường. Chỉ nhô ra phòng 0.5 m.',
+    items: [
+      { k: 'bed', bunk: true, label: 'Giường tầng', dim: 'nệm 0.9 × 1.9 · khung 1.0 × 2.0', x: 0.05, y: 0.05, w: 1.0, h: 2.0 },
+      { k: 'stairs', handrail: true, label: 'Cầu thang', dim: '4 bậc', x: 0.05, y: 2.05, w: 0.5, h: 1.0, ldim: '0.5 × 1.0 m · 4 ngăn kéo mở bên hông' },
+      { k: 'table', label: 'Bàn', dim: '1.0 × 0.6 m', x: 1.65, y: 0.08, w: 1.0, h: 0.6 },
+      { k: 'stool', label: '', dim: '', x: 1.8, y: 0.76, w: 0.28, h: 0.28, round: true, list: false },
+      { k: 'stool', label: '', dim: '', x: 2.22, y: 0.76, w: 0.28, h: 0.28, round: true, list: '2 ghế đẩu', ldim: 'Ø 0.28 m' },
+      { k: 'wardrobe', face: 'x-', label: 'Tủ quần áo', dim: '1.6 × 0.6 · cao 2.4', x: 3.38, y: 0.05, w: 0.6, h: 1.6, hh: 2.4, doors: 4, ldim: '1.6 × 0.6 m · cao 2.4 m · chia đôi cho 2 bé' },
+      { k: 'rug', label: 'Thảm chơi', dim: '1.5 × 1.2 m', x: 1.8, y: 1.05, w: 1.5, h: 1.2 },
+      { k: 'shelf', label: 'Kệ đồ chơi', dim: '1.2 × 0.35', x: 1.3, y: 2.83, w: 1.2, h: 0.35, face: 'z-' },
+    ],
+    elevation: 'side',
+    pros: [
+      'Cầu thang áp tường suốt chiều dài, chỉ nhô ra phòng 0.5 m, nên giữa phòng thoáng nhất.',
+      'Một bên cầu thang là tường, bên kia có tay vịn, bé leo rất vững.',
+      'Giữa cầu thang và kệ đồ chơi còn 0.75 m trống để đứng bước lên.',
+      'Chiều cao giống phương án C: sàn tầng 2 ở 1.2 m, tầng dưới ngồi được (0.87 m), phía trên còn trống 1.48 m.',
+    ],
+    watch: [
+      'Giường cộng cầu thang dài 3.0 m, gần hết tường trái 3.2 m. Bậc thấp nhất chỉ cách tường dưới 0.15 m, nên bé bước lên bậc đầu từ bên hông.',
+      'Không còn góc để giỏ đồ như phương án C.',
+      'Theo khuyến cáo an toàn, trẻ dưới 6 tuổi không nên ngủ tầng trên. Trước đó tầng trên chỉ dùng để chơi ban ngày khi có người lớn, ban đêm chắn cầu thang bằng cổng an toàn.',
+      'Tầng trên chỉ cách cửa sổ khoảng 0.3 m, nên cần lắp khóa hoặc chặn cửa sổ.',
+    ],
+  },
+  {
+    id: 'c',
+    badge: 'Giường tầng · cầu thang ngang cuối giường',
+    name: 'C · Giường tầng, cầu thang ngang cuối giường',
+    tag: 'Giường tầng thấp hợp với bé nhỏ, cầu thang có ngăn kéo. Sàn chơi rộng.',
+    items: [
+      { k: 'bed', bunk: true, label: 'Giường tầng', dim: 'nệm 0.9 × 1.9 · khung 1.0 × 2.0', x: 0.05, y: 0.05, w: 1.0, h: 2.0 },
+      { k: 'stairs', dir: 'x', label: 'Cầu thang', dim: '4 bậc · sát tường', x: 0.05, y: 2.05, w: 1.0, h: 0.5, ldim: '1.0 × 0.5 m · 4 ngăn kéo' },
+      { k: 'table', label: 'Bàn', dim: '1.0 × 0.6 m', x: 1.65, y: 0.08, w: 1.0, h: 0.6 },
+      { k: 'stool', label: '', dim: '', x: 1.8, y: 0.76, w: 0.28, h: 0.28, round: true, list: false },
+      { k: 'stool', label: '', dim: '', x: 2.22, y: 0.76, w: 0.28, h: 0.28, round: true, list: '2 ghế đẩu', ldim: 'Ø 0.28 m' },
+      { k: 'wardrobe', face: 'x-', label: 'Tủ quần áo', dim: '1.6 × 0.6 · cao 2.4', x: 3.38, y: 0.05, w: 0.6, h: 1.6, hh: 2.4, doors: 4, ldim: '1.6 × 0.6 m · cao 2.4 m · chia đôi cho 2 bé' },
+      { k: 'rug', label: 'Thảm chơi', dim: '1.5 × 1.2 m', x: 1.8, y: 1.05, w: 1.5, h: 1.2 },
+      { k: 'shelf', label: 'Kệ đồ chơi', dim: '1.2 × 0.35', x: 1.3, y: 2.83, w: 1.2, h: 0.35, face: 'z-' },
+      { k: 'rug', label: 'Giỏ đồ', dim: '0.9 × 0.4', x: 0.1, y: 2.75, w: 0.9, h: 0.4, ldim: 'giỏ đồ chơi / đồ giặt', bins: true },
+    ],
+    elevation: 'end',
+    pros: [
+      'Sàn tầng 2 chỉ cao 1.2 m (giường tầng thông thường cao 1.5–1.6 m), nên lỡ ngã cũng nhẹ hơn nhiều.',
+      'Trần 2.8 m vẫn còn 1.48 m phía trên nệm tầng 2, bé ngồi chơi thoải mái.',
+      'Tầng dưới cao 0.87 m tính từ mặt nệm, đủ cho bé ngồi và bố mẹ ngồi khom kể chuyện.',
+      'Cầu thang đặt ở cuối giường, một bên sát tường nên bé luôn có chỗ vịn. Bậc 30 cm an toàn hơn thang leo thẳng đứng, và mỗi bậc là một ngăn kéo.',
+      'Tủ quần áo 1.6 m cao 2.4 m, cộng 4 ngăn cầu thang và kệ đồ chơi, đủ chỗ cho 2 bé.',
+    ],
+    watch: [
+      'Theo khuyến cáo an toàn, trẻ dưới 6 tuổi không nên ngủ tầng trên. Bé lớn hơn ngủ trên khi đủ 6 tuổi. Trước đó, tầng trên chỉ dùng để chơi ban ngày khi có người lớn, và chắn cầu thang bằng cổng an toàn vào ban đêm.',
+      'Nệm tầng trên dày tối đa 12 cm để lan can vẫn cao 30 cm trên mặt nệm.',
+      'Tầng trên chỉ cách cửa sổ khoảng 0.3 m, nên cần lắp khóa hoặc chặn cửa sổ.',
+    ],
+  },
+];
+
+// D and E: B and C with 5 steps of 24 cm instead of 4 of 30 cm
+function derive(baseId, o) {
+  const b = OPTIONS.find(x => x.id === baseId);
+  return Object.assign({}, b, o, { items: b.items.map(i => i.k === 'stairs' ? Object.assign({}, i, o.stairs) : (o.move && o.move[i.label] ? Object.assign({}, i, o.move[i.label]) : Object.assign({}, i))) });
+}
+OPTIONS.push(derive('b', {
+  id: 'd',
+  badge: 'Giường tầng · cầu thang dọc tường · 5 bậc',
+  name: 'D · Như B, cầu thang 5 bậc',
+  tag: 'Cầu thang dọc tường như B, nhưng chia 5 bậc cao 24 cm. Chiều dài vẫn 1.0 m nên mỗi bậc sâu 20 cm.',
+  stairs: { steps: 5, dim: '5 bậc × 24 cm', ldim: '0.5 × 1.0 m · bậc 50 × 20 cm · 5 ngăn kéo mở bên hông' },
+  pros: [
+    'Bậc chỉ cao 24 cm thay vì 30 cm, bé 2–3 tuổi leo dễ hơn hẳn.',
+    'Vẫn vừa tường trái như B: cầu thang dài 1.0 m, mỗi mặt bậc 50 × 20 cm (0.10 m²).',
+    'Cầu thang áp tường, có tay vịn bên ngoài, 5 ngăn kéo mở ra bên hông.',
+  ],
+  watch: [
+    'Bậc sâu 20 cm vừa chân bé (13–19 cm) nhưng hơi hẹp với người lớn.',
+    'Bậc thấp nhất vẫn cách tường dưới 0.15 m, nên bé bước lên bậc đầu từ bên hông.',
+    'Theo khuyến cáo an toàn, trẻ dưới 6 tuổi không nên ngủ tầng trên. Trước đó tầng trên chỉ dùng để chơi ban ngày khi có người lớn, ban đêm chắn cầu thang bằng cổng an toàn.',
+    'Tầng trên chỉ cách cửa sổ khoảng 0.3 m, nên cần lắp khóa hoặc chặn cửa sổ.',
+  ],
+}));
+OPTIONS.push(derive('c', {
+  id: 'e',
+  badge: 'Giường tầng · cầu thang ngang cuối giường · 5 bậc',
+  name: 'E · Như C, cầu thang 5 bậc',
+  tag: 'Cầu thang ngang cuối giường như C, chia 5 bậc cao 24 cm và giữ bậc sâu 25 cm. Cầu thang dài 1.25 m.',
+  stairs: { steps: 5, w: 1.25, dim: '5 bậc × 24 cm', ldim: '1.25 × 0.5 m · bậc 50 × 25 cm · 5 ngăn kéo' },
+  move: { 'Kệ đồ chơi': { x: 1.5 } },
+  pros: [
+    'Dễ leo nhất trong các phương án: bậc cao 24 cm, mặt bậc 50 × 25 cm (0.125 m²).',
+    'Cầu thang chỉ dài hơn C 25 cm. Góc dưới vẫn còn chỗ để giỏ đồ.',
+    'Kệ đồ chơi dời sang phải 20 cm để trước bậc đầu có chỗ đứng.',
+  ],
+  watch: [
+    'Cầu thang nhô ra 1.3 m tính từ tường, nên lối đi giữa giường và thảm hẹp lại ở phía cuối giường.',
+    'Theo khuyến cáo an toàn, trẻ dưới 6 tuổi không nên ngủ tầng trên. Trước đó tầng trên chỉ dùng để chơi ban ngày khi có người lớn, ban đêm chắn cầu thang bằng cổng an toàn.',
+    'Tầng trên chỉ cách cửa sổ khoảng 0.3 m, nên cần lắp khóa hoặc chặn cửa sổ.',
+  ],
+}));
+// F: E's bunk and 5-step stairs unchanged, shifted down so the stairs sit against the bottom wall
+// beside the wardrobe; the space freed at the head end becomes a shelf unit facing the bunk
+OPTIONS.push({
+  id: 'f',
+  badge: 'Như E · dịch xuống tường dưới · kệ sát tường',
+  name: 'F · Như E, dịch giường xuống + kệ',
+  tag: 'Giường và cầu thang giữ nguyên như E, chỉ dịch xuống để cầu thang sát tường dưới, cạnh kệ đồ chơi. Góc dư ở đầu giường đặt một kệ sát tường, quay ra bàn.',
+  items: [
+    { k: 'bed', bunk: true, label: 'Giường tầng', dim: 'nệm 0.9 × 1.9 · khung 1.0 × 2.0', x: 0.05, y: 0.67, w: 1.0, h: 2.0 },
+    { k: 'stairs', dir: 'x', steps: 5, railSide: 'none', label: 'Cầu thang', dim: '5 bậc × 24 cm', x: 0.05, y: 2.67, w: 1.25, h: 0.5, ldim: '1.25 × 0.5 m · bậc 50 × 25 cm · 5 ngăn kéo' },
+    { k: 'shelf', tall: true, face: 'x+', label: 'Kệ', dim: '0.57 × 0.4', x: 0.05, y: 0.05, w: 0.4, h: 0.57, hh: 1.8, ldim: 'sát tường, quay ra bàn · rộng 0.57 · sâu 0.4 · cao 1.8 m' },
+    { k: 'table', label: 'Bàn', dim: '1.0 × 0.6 m', x: 1.65, y: 0.08, w: 1.0, h: 0.6 },
+    { k: 'stool', label: '', dim: '', x: 1.8, y: 0.76, w: 0.28, h: 0.28, round: true, list: false },
+    { k: 'stool', label: '', dim: '', x: 2.22, y: 0.76, w: 0.28, h: 0.28, round: true, list: '2 ghế đẩu', ldim: 'Ø 0.28 m' },
+    { k: 'wardrobe', face: 'x-', label: 'Tủ quần áo', dim: '1.6 × 0.6 · cao 2.4', x: 3.38, y: 0.05, w: 0.6, h: 1.6, hh: 2.4, doors: 4, ldim: '1.6 × 0.6 m · cao 2.4 m · chia đôi cho 2 bé' },
+    { k: 'rug', label: 'Thảm chơi', dim: '1.5 × 1.2 m', x: 1.8, y: 1.05, w: 1.5, h: 1.2 },
+    { k: 'shelf', label: 'Kệ đồ chơi', dim: '1.0 × 0.35', x: 1.75, y: 2.83, w: 1.0, h: 0.35, face: 'z-' },
+  ],
+  elevation: 'end',
+  pros: [
+    'Giường và cầu thang giống hệt E, cầu thang vẫn ở cuối giường, chỉ dịch xuống sát tường dưới.',
+    'Kệ cao 1.8 m đặt sát tường trái ở góc đầu giường, quay ra phía bàn.',
+    'Trước kệ còn 0.85 m trống (đến mép cầu thang ở x = 1.3 m), đứng lấy đồ thoải mái. Góc này cũng thành chỗ chơi nhỏ.',
+    'Trước bậc đầu tiên còn 0.45 m trống, giữa cầu thang và kệ đồ chơi.',
+  ],
+  watch: [
+    'Kệ đồ chơi ở tường dưới chỉ dài 1.0 m để chừa chỗ đứng trước cầu thang và không vướng cửa ra vào.',
+    'Kệ chỉ rộng 0.57 m, vì đó là khoảng trống giữa tường cửa sổ và đầu giường.',
+    'Kệ cao sát đầu giường tầng: bắt vít vào tường để bé không kéo đổ hay trèo từ tầng trên sang.',
+    'Theo khuyến cáo an toàn, trẻ dưới 6 tuổi không nên ngủ tầng trên. Trước đó tầng trên chỉ dùng để chơi ban ngày khi có người lớn, ban đêm chắn cầu thang bằng cổng an toàn.',
+  ],
+});
+
+const pct = (v, total) => (v / total * 100) + '%';
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const place = (e, x, y, w, h) => {
+  e.style.left = pct(x, ROOM.w); e.style.top = pct(y, ROOM.h);
+  if (w != null) e.style.width = pct(w, ROOM.w);
+  if (h != null) e.style.height = pct(h, ROOM.h);
+  return e;
+};
+
+function buildPlan(opt) {
+  const wrap = el('div', 'plan-wrap');
+  const room = el('div', 'room');
+  room.setAttribute('role', 'img');
+  room.setAttribute('aria-label', 'Mặt bằng phương án ' + opt.name);
+
+  const [w0, w1] = ROOM.win;
+  const win = el('div', 'window'); win.style.left = pct(w0, ROOM.w); win.style.width = pct(w1 - w0, ROOM.w); room.append(win);
+  const [d0, d1] = ROOM.door, dw = d1 - d0;
+  const gap = el('div', 'doorgap'); gap.style.left = pct(d0, ROOM.w); gap.style.width = pct(dw, ROOM.w); room.append(gap);
+  room.append(place(el('div', 'swing'), d0, ROOM.h - dw, dw, dw));
+  const leaf = place(el('div', 'leaf'), d1, ROOM.h - dw, null, dw); leaf.style.marginLeft = '-3px'; room.append(leaf);
+
+  opt.items.forEach((it, i) => {
+    const e = place(el('div', `item k-${it.k}${it.round ? ' round' : ''}${it.k === 'rug' ? ' rug' : ''}${it.dir === 'x' ? ' dx' : ''}`,
+      it.label ? `<b>${it.label}</b><span>${it.dim}</span>` : ''), it.x, it.y, it.w, it.h);
+    e.dataset.idx = i;
+    e.title = (it.label || 'Ghế đẩu') + (it.dim ? ' · ' + it.dim : '');
+    if (it.k === 'stairs') {
+      const f = 100 / (it.steps || 4);
+      e.style.background = `repeating-linear-gradient(${it.dir === 'x' ? 90 : 0}deg,var(--stairs) 0 calc(${f}% - 2px),var(--stairs-b) calc(${f}% - 2px) ${f}%)`;
+    }
+    room.append(e);
+  });
+
+  if (opt.gap) {
+    const g = opt.gap;
+    room.append(place(el('div', 'gap'), g.x, g.y1, null, g.y2 - g.y1));
+    room.append(place(el('div', 'gap-l', g.text), g.x + 0.06, (g.y1 + g.y2) / 2 - 0.08));
+  }
+
+  wrap.append(room);
+  const at = f => `calc(34px + (100% - 44px) * ${f})`;
+  const winL = el('div', 'lbl', 'Cửa sổ 1.3 m'); winL.style.top = '4px'; winL.style.left = at((w0 + w1) / 2 / ROOM.w); winL.style.transform = 'translateX(-50%)'; wrap.append(winL);
+  const doorL = el('div', 'lbl', 'Cửa 0.9 m'); doorL.style.bottom = '8px'; doorL.style.left = at((d0 + d1) / 2 / ROOM.w); doorL.style.transform = 'translateX(-50%)'; wrap.append(doorL);
+  const wL = el('div', 'dim', '4.0 m'); wL.style.bottom = '8px'; wL.style.left = at(0.35); wL.style.transform = 'translateX(-50%)'; wrap.append(wL);
+  const hL = el('div', 'dim', '3.2 m'); hL.style.left = '4px'; hL.style.top = '50%'; hL.style.transform = 'rotate(-90deg) translateX(50%)'; hL.style.transformOrigin = 'left top'; wrap.append(hL);
+  return wrap;
+}
+
+// Side view of the bunk from the room, heights in metres. Domain: x −0.25…3.0, h −0.35…2.95.
+const EX0 = -0.25, EH0 = 2.95, EH = 3.3;
+let EW = 4.25;
+function ebox(parent, cls, x0, x1, h0, h1, html) {
+  const e = el('div', 'e ' + cls, html);
+  e.style.left = pct(x0 - EX0, EW); e.style.width = pct(x1 - x0, EW);
+  e.style.top = pct(EH0 - h1, EH); e.style.height = pct(h1 - h0, EH);
+  parent.append(e); return e;
+}
+function etext(parent, cls, x, h, html) {
+  const e = el('div', 'e ' + cls, html);
+  e.style.left = pct(x - EX0, EW); e.style.top = pct(EH0 - h, EH);
+  parent.append(e); return e;
+}
+
+// mode 'end': stairs at the foot end rising toward the wall (seen head-on); 'side': stairs along the wall (seen in profile)
+function buildElevation(opt) {
+  const mode = opt.elevation, st = opt.items.find(i => i.k === 'stairs');
+  const n = st.steps || 4, rise = 1.2 / n, run = mode === 'side' ? st.h : st.w, tread = run / n;
+  const sx = mode === 'side' ? 2.0 + run : 2.5;   // right edge of the stairs in the drawing
+  EW = sx + 1.75;
+  const cm = v => Math.round(v * 100);
+  const block = el('div', 'elev-block');
+  block.append(el('h3', null, 'Mặt đứng giường tầng (nhìn từ phía trong phòng), trần 2.8 m'));
+  const g = el('div', 'elev-grid');
+  const v = el('div', 'elev');
+  v.style.aspectRatio = EW + ' / ' + EH;
+  v.setAttribute('role', 'img');
+  v.setAttribute('aria-label', 'Mặt đứng giường tầng: nệm dưới 0.27 m, sàn tầng 2 1.2 m, nệm trên 1.32 m, lan can 1.62 m, trần 2.8 m');
+
+  ebox(v, 'e-ceil', EX0, EW + EX0, 2.8, 2.95);
+  ebox(v, 'e-floor', EX0, EW + EX0, -0.03, 0);
+  ebox(v, 'e-post', 0, 0.06, 0, 1.62);
+  ebox(v, 'e-post', 1.94, 2.0, 0, 1.62);
+  ebox(v, 'e-deck', 0, 2.0, 0.09, 0.15);
+  ebox(v, 'e-mat', 0.06, 1.94, 0.15, 0.27);
+  ebox(v, 'e-deck', 0, 2.0, 1.14, 1.2);
+  ebox(v, 'e-mat', 0.06, 1.94, 1.2, 1.32);
+  ebox(v, 'e-rail', 0.06, 1.94, 1.32, 1.62);
+  // stairs at the foot end, rising toward the wall: seen from the room each riser shows above the one in front
+  for (let i = 0; i < n; i++) {
+    if (mode === 'side') ebox(v, 'e-step', 2.0 + i * tread, 2.0 + (i + 1) * tread, 0, 1.2 - i * rise);
+    else ebox(v, 'e-step', 2.0, 2.5, i * rise, (i + 1) * rise);
+  }
+
+  [[0.27, '<b>0.27 m</b> mặt nệm dưới'], [1.2, '<b>1.20 m</b> sàn tầng 2'], [1.32, '<b>1.32 m</b> mặt nệm trên'],
+   [1.62, '<b>1.62 m</b> đỉnh lan can'], [2.8, '<b>2.80 m</b> trần']].forEach(([h, t]) => {
+    ebox(v, 'e-tick', h > 1.25 ? 2.0 : sx, sx + 0.12, h, h);
+    etext(v, 'e-txt', sx + 0.14, h + (h === 1.2 ? -0.05 : h === 1.32 ? 0.05 : 0), t);
+  });
+
+  ebox(v, 'e-vline', 0.45, 0.47, 0.27, 1.14);
+  etext(v, 'e-vtxt', 0.52, 0.7, '0.87 m');
+  ebox(v, 'e-vline', 0.45, 0.47, 1.62, 2.8);
+  etext(v, 'e-vtxt', 0.52, 2.2, '1.48 m trống phía trên');
+  etext(v, 'e-cap', 0.0, -0.12, 'Đầu giường');
+  etext(v, 'e-cap', 1.6, -0.12, (mode === 'side' ? 'Cầu thang dọc tường · ' : 'Cầu thang ngang · ') + n + ' bậc × ' + cm(rise) + ' cm');
+
+  const spec = el('div');
+  spec.innerHTML = `
+    <table class="spec">
+      <tr><td>Mặt nệm tầng dưới (khung 15 cm + nệm 12 cm)</td><td>0.27 m</td></tr>
+      <tr><td>Khoảng ngồi tầng dưới (từ mặt nệm đến gầm tầng 2)</td><td>0.87 m</td></tr>
+      <tr><td>Sàn tầng 2</td><td>1.20 m</td></tr>
+      <tr><td>Mặt nệm tầng 2 (nệm dày tối đa 12 cm)</td><td>1.32 m</td></tr>
+      <tr><td>Lan can tầng 2, kín cả 4 phía, cao hơn mặt nệm</td><td>+30 cm</td></tr>
+      <tr><td>Khe giữa các nan lan can</td><td>≤ 7.5 cm</td></tr>
+      <tr><td>Lối lên tầng 2 (chỉ ở đầu cầu thang)</td><td>40–45 cm</td></tr>
+      <tr><td>Khoảng trống phía trên lan can đến trần</td><td>1.18 m</td></tr>
+      <tr><td>Cầu thang: rộng 50 cm, sâu mỗi bậc ${cm(tread)} cm, cao mỗi bậc ${cm(rise)} cm (mặt bậc 50 × ${cm(tread)} cm)</td><td>${n} bậc</td></tr>
+    </table>
+    <p style="font-size:13px;color:var(--muted);margin:10px 0 0">Trần 2.8 m cho phép làm giường cao hơn, nhưng với bé 2–6 tuổi thì nên giữ thấp: sàn tầng 2 ở 1.2 m là đủ để cả hai tầng đều ngồi được.</p>`;
+  g.append(v, spec);
+  block.append(g);
+  return block;
+}
+
+function setScale(card) {
+  const r = card.querySelector('.room');
+  card.querySelector('.scale i').style.width = (r.clientWidth / ROOM.w) + 'px';
+}
+
+function buildCard(opt) {
+  const card = el('article', 'card' + (opt.badge ? ' rec' : ''));
+  card.dataset.id = opt.id;
+  if (opt.badge) card.append(el('span', 'badge', opt.badge));
+  card.append(el('h2', null, opt.name), el('p', 'tag', opt.tag), buildPlan(opt));
+
+  const scale = el('div', 'scale'); const bar = el('i'); scale.append(bar, document.createTextNode('1 m'));
+  card.append(scale);
+
+  const v3b = el('div', 'v3d-block');
+  const head = el('div', 'v3d-head'); head.append(el('h3', null, 'Phối cảnh 3D'), el('small', null, 'Kéo để xoay · cuộn hoặc chụm 2 ngón để phóng to'));
+  const host = el('div', 'v3d');
+  v3b.append(head, host); card.append(v3b);
+  mount3D(opt, host);
+
+  const cols = el('div', 'cols');
+  const f = el('div'); f.append(el('h3', null, 'Đồ đạc'));
+  const ul = el('ul', 'furn');
+  opt.items.forEach((it, i) => {
+    if (it.list === false) return;
+    const li = el('li', null, `<span class="sw k-${it.k}"></span>${it.list || it.label}<small>${it.ldim || it.dim}</small>`);
+    li.dataset.idx = i;
+    ul.append(li);
+  });
+  f.append(ul);
+  const p = el('div'); p.append(el('h3', null, 'Ưu điểm'));
+  const pu = el('ul'); opt.pros.forEach(t => pu.append(el('li', null, t))); p.append(pu);
+  const w = el('div'); w.append(el('h3', null, 'Lưu ý'));
+  const wu = el('ul'); opt.watch.forEach(t => wu.append(el('li', null, t))); w.append(wu);
+  cols.append(f, p, w);
+  card.append(cols);
+
+  if (opt.elevation) card.append(buildElevation(opt));
+
+  // hover a list row or a piece: highlight both (stools as a pair)
+  const group = i => opt.items[i].k === 'stool' ? opt.items.map((x, j) => x.k === 'stool' ? j : -1).filter(j => j >= 0) : [i];
+  const setHl = (i, on) => group(i).forEach(j => card.querySelectorAll(`[data-idx="${j}"]`).forEach(n => n.classList.toggle('hl', on)));
+  card.querySelectorAll('[data-idx]').forEach(n => {
+    n.addEventListener('mouseenter', () => setHl(+n.dataset.idx, true));
+    n.addEventListener('mouseleave', () => setHl(+n.dataset.idx, false));
+  });
+  return card;
+}
+
+// ---------- 3D view (three.js). Plan x → x, plan y → z, height → y; metres.
+function mount3D(opt, host) {
+  let started = false;
+  const ro = new ResizeObserver(() => {
+    if (!host.clientWidth) return;
+    if (!started) { started = true; build3D(opt, host, ro); }
+  });
+  ro.observe(host);
+}
+
+function build3D(opt, host, ro) {
+  if (!window.THREE || !THREE.OrbitControls) { host.innerHTML = '<div class="msg">Không tải được thư viện 3D. Cần kết nối internet để xem phối cảnh.</div>'; return; }
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(host.clientWidth, host.clientHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  host.append(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xF4F1EA);
+  const cam = new THREE.PerspectiveCamera(42, host.clientWidth / host.clientHeight, 0.1, 60);
+  cam.position.set(6.0, 4.6, 6.6);
+  const ctl = new THREE.OrbitControls(cam, renderer.domElement);
+  ctl.target.set(1.9, 0.7, 1.5);
+  ctl.enableDamping = true;
+  ctl.maxPolarAngle = Math.PI / 2.05;
+  ctl.minDistance = 2; ctl.maxDistance = 14;
+  ctl.update();
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xb9a98c, 0.75));
+  const sun = new THREE.DirectionalLight(0xfff4e0, 0.75);
+  sun.position.set(6, 9, 6);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -5, right: 5, top: 5, bottom: -5, near: 1, far: 30 });
+  sun.target.position.set(2, 0, 1.6);
+  scene.add(sun, sun.target);
+  const winLight = new THREE.PointLight(0xdfeeff, 0.35, 6);
+  winLight.position.set(2.0, 1.6, 0.4);
+  scene.add(winLight);
+
+  const mats = {};
+  const mat = (c, extra) => {
+    const key = c + JSON.stringify(extra || {});
+    return mats[key] || (mats[key] = new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.85, metalness: 0 }, extra || {})));
+  };
+  // box by min corner: plan (x, z), bottom height y
+  const box = (w, h, d, c, x, y, z, opts) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), opts && opts.material || mat(c));
+    m.position.set(x + w / 2, y + h / 2, z + d / 2);
+    m.castShadow = !(opts && opts.noShadow); m.receiveShadow = true;
+    scene.add(m); return m;
+  };
+
+  const C = { floor: 0xE3D5BD, wall: 0xF3F0EA, wood: 0xC99A6B, woodDark: 0x7A5530, mattress: 0xF6F2EA, blanket: 0xEBAA90,
+              blanket2: 0x9DBFD9, pillow: 0xFFFFFF, table: 0xD7B47A, stool: 0xA57B42, wardrobe: 0xE8D29E, shelf: 0xA9CCAE,
+              rug: 0xF3EBD2, seam: 0x8C6A33, toys: [0xE07A5F, 0x3D85C6, 0xF2CC8F, 0x81B29A] };
+
+  // room shell: floor, left + window walls full height, the two walls nearest the camera as low curbs
+  box(4.0, 0.02, 3.2, C.floor, 0, -0.02, 0);
+  box(0.1, 2.8, 3.3, C.wall, -0.1, 0, -0.1);
+  const [w0, w1] = ROOM.win, sill = 0.9, head = 2.2;
+  box(w0, 2.8, 0.1, C.wall, 0, 0, -0.1);
+  box(4.0 - w1, 2.8, 0.1, C.wall, w1, 0, -0.1);
+  box(w1 - w0, sill, 0.1, C.wall, w0, 0, -0.1);
+  box(w1 - w0, 2.8 - head, 0.1, C.wall, w0, head, -0.1);
+  box(w1 - w0, head - sill, 0.02, 0, w0, sill, -0.06, { material: new THREE.MeshStandardMaterial({ color: 0xA8D0F0, transparent: true, opacity: 0.35, roughness: 0.1 }), noShadow: true });
+  box(w1 - w0, 0.04, 0.12, C.wall, w0, sill - 0.02, -0.02);
+  const [d0, d1] = ROOM.door;
+  box(d0, 0.12, 0.1, C.wall, 0, 0, 3.2);
+  box(4.0 - d1, 0.12, 0.1, C.wall, d1, 0, 3.2);
+  box(0.1, 0.12, 3.4, C.wall, 4.0, 0, -0.1);
+  const arc = new THREE.Mesh(new THREE.RingGeometry(d1 - d0 - 0.02, d1 - d0, 40, 1, Math.PI / 2, Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x55606B, side: THREE.DoubleSide }));
+  arc.rotation.x = -Math.PI / 2; arc.position.set(d1, 0.005, 3.2); scene.add(arc);
+
+  const bedding = (x, z, w, d, y, blanketColor, flip) => {
+    box(w - 0.06, 0.12, d - 0.06, C.mattress, x + 0.03, y, z + 0.03);
+    box(w - 0.04, 0.03, d * 0.58, blanketColor, x + 0.02, y + 0.12, flip ? z + d * 0.02 : z + d * 0.4);
+    const n = w > 1.2 ? 2 : 1, pw = Math.min(0.55, (w - 0.2) / n);
+    for (let i = 0; i < n; i++) box(pw, 0.09, 0.32, C.pillow, x + (w - n * pw - (n - 1) * 0.08) / 2 + i * (pw + 0.08), y + 0.12, flip ? z + d - 0.4 : z + 0.08);
+  };
+  // guard rail of the top bunk between two plan points, horizontal along x or z
+  const rail = (x0, z0, x1, z1, base, top) => {
+    const alongX = z0 === z1, L = alongX ? x1 - x0 : z1 - z0;
+    if (alongX) box(L, 0.05, 0.05, C.wood, x0, top - 0.05, z0 - 0.025); else box(0.05, 0.05, L, C.wood, x0 - 0.025, top - 0.05, z0);
+    const n = Math.max(1, Math.floor(L / 0.12));
+    for (let i = 1; i < n; i++) {
+      const t = i * L / n;
+      if (alongX) box(0.03, top - base, 0.03, C.wood, x0 + t - 0.015, base, z0 - 0.015);
+      else box(0.03, top - base, 0.03, C.wood, x0 - 0.015, base, z0 + t - 0.015);
+    }
+  };
+
+  opt.items.forEach(it => {
+    const { x, y: z, w, h: d } = it;
+    switch (it.k) {
+      case 'rug':
+        if (it.bins) { [0, 1].forEach(i => box(0.4, 0.35, d - 0.04, i ? 0x9DBFD9 : 0xE9C46A, x + 0.03 + i * 0.45, 0, z + 0.02)); break; }
+        box(w, 0.012, d, C.rug, x, 0, z); break;
+      case 'table': {
+        box(w, 0.03, d, C.table, x, 0.47, z);
+        [[0.03, 0.03], [w - 0.07, 0.03], [0.03, d - 0.07], [w - 0.07, d - 0.07]].forEach(([a, b]) => box(0.04, 0.47, 0.04, C.woodDark, x + a, 0, z + b));
+        break;
+      }
+      case 'stool': {
+        const m = new THREE.Mesh(new THREE.CylinderGeometry(w / 2, w / 2 * 0.9, 0.28, 28), mat(C.stool));
+        m.position.set(x + w / 2, 0.14, z + d / 2); m.castShadow = m.receiveShadow = true; scene.add(m); break;
+      }
+      case 'shelf': {
+        const hh = it.hh || 0.8;
+        box(w, hh, d, C.shelf, x, 0, z);
+        if (it.drawers && it.face === 'x') {
+          for (let i = 1; i < it.drawers; i++) box(0.01, 0.01, d - 0.04, C.seam, x - 0.008, i * hh / it.drawers, z + 0.02);
+          for (let i = 0; i < it.drawers; i++) box(0.02, 0.025, 0.16, C.woodDark, x - 0.02, (i + 0.5) * hh / it.drawers, z + d / 2 - 0.08);
+        } else if (it.drawers) {
+          for (let i = 1; i < it.drawers; i++) box(w - 0.04, 0.01, 0.01, C.seam, x + 0.02, i * hh / it.drawers, z - 0.008);
+          for (let i = 0; i < it.drawers; i++) box(0.16, 0.025, 0.02, C.woodDark, x + w / 2 - 0.08, (i + 0.5) * hh / it.drawers, z - 0.02);
+        } else if (it.tall && it.face === 'x+') {
+          const rows = 5;
+          for (let r = 1; r < rows; r++) box(0.02, 0.02, d - 0.04, C.seam, x + w, r * hh / rows, z + 0.02);
+          for (let r = 0; r < 3; r++) box(0.04, hh / rows - 0.08, d - 0.12, C.toys[r % 4], x + w, r * hh / rows + 0.03, z + 0.06);
+        } else if (it.tall) {
+          const rows = 5;
+          for (let r = 1; r < rows; r++) box(w - 0.04, 0.02, 0.02, C.seam, x + 0.02, r * hh / rows, z + d);
+          box(0.02, hh - 0.04, 0.02, C.seam, x + w / 2 - 0.01, 0.02, z + d);
+          for (let r = 0; r < 2; r++) for (let c = 0; c < 2; c++) box(w / 2 - 0.1, hh / rows - 0.08, 0.04, C.toys[(r * 2 + c) % 4], x + 0.05 + c * w / 2, r * hh / rows + 0.03, z + d);
+        } else {
+          C.toys.forEach((c, i) => w > d ? box(0.16, 0.14, 0.16, c, x + 0.1 + i * 0.27, hh, z + 0.08) : box(0.16, 0.14, 0.16, c, x + 0.08, hh, z + 0.1 + i * 0.27));
+        }
+        break;
+      }
+      case 'wardrobe': {
+        const hh = it.hh || 2.0, n = it.doors || 3;
+        box(w, hh, d, C.wardrobe, x, 0, z);
+        if (it.face === 'x-') {
+          for (let i = 1; i < n; i++) box(0.01, hh - 0.08, 0.012, C.seam, x - 0.008, 0.04, z + i * d / n - 0.006);
+          box(0.01, 0.012, d - 0.04, C.seam, x - 0.008, hh - 0.45, z + 0.02);                // top storage line
+          for (let i = 0; i < n; i++) box(0.02, 0.22, 0.02, C.woodDark, x - 0.02, (hh - 0.45) * 0.5, z + (i + 0.5) * d / n + (i % 2 ? -0.12 : 0.12));
+          break;
+        }
+        for (let i = 1; i < n; i++) box(0.012, hh - 0.08, 0.01, C.seam, x + i * w / n - 0.006, 0.04, z - 0.008);
+        for (let i = 0; i < n; i++) box(0.02, 0.22, 0.02, C.woodDark, x + (i + 0.5) * w / n + (i % 2 ? -0.12 : 0.12), hh * 0.5, z - 0.02);
+        break;
+      }
+      case 'stairs': {
+        const n = it.steps || 4, rise = 1.2 / n, climb = 1.2 - rise;
+        if (it.dir === 'x') {
+          // steps rise toward the wall (x = it.x); low end and drawer fronts face the room (+x)
+          const sw = w / n;
+          for (let i = 0; i < n; i++) {
+            const x0 = x + w - (i + 1) * sw, hh = rise * (i + 1);
+            box(sw, hh, d, C.wood, x0, 0, z);
+            box(0.02, 0.025, 0.14, C.woodDark, x0 + sw, hh - rise / 2, z + d / 2 - 0.07);
+          }
+          const rz = it.railSide === 'z-' ? z : z + d - 0.04;              // the open long side of the stairs
+          if (it.railSide === 'none') break;                                // both long sides closed (bunk / wall)
+          box(0.04, 0.6, 0.04, C.wood, x + w - 0.04, rise, rz);   // newel post with handrail
+          const hr = new THREE.Mesh(new THREE.BoxGeometry(Math.hypot(w - 0.04, climb), 0.04, 0.04), mat(C.wood));
+          hr.position.set(x + (w - 0.04) / 2 + 0.02, rise + 0.6 + climb / 2, rz + 0.02);
+          hr.rotation.z = -Math.atan2(climb, w - 0.04); hr.castShadow = true; scene.add(hr);
+          break;
+        }
+        // steps rising toward -z (low end faces +z)
+        const sd = d / n;
+        for (let i = 0; i < n; i++) {
+          const z0 = z + d - (i + 1) * sd, hh = rise * (i + 1);
+          box(w, hh, sd, C.wood, x, 0, z0);
+          // along-wall stairs: drawers open sideways into the room, since the lowest riser faces the wall 0.15 m away
+          if (it.handrail) box(0.02, 0.025, 0.14, C.woodDark, x + w, hh - rise / 2, z0 + sd / 2 - 0.07);
+          else box(0.14, 0.025, 0.02, C.woodDark, x + w / 2 - 0.07, hh - rise / 2, z0 + sd);
+        }
+        if (it.handrail) {
+          // open side (+x): newel post at the low end and a rail climbing toward the bunk
+          box(0.04, 0.6, 0.04, C.wood, x + w - 0.04, rise, z + d - 0.04);
+          const hr = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, Math.hypot(d - 0.04, climb)), mat(C.wood));
+          hr.position.set(x + w - 0.02, rise + 0.6 + climb / 2, z + (d - 0.04) / 2);
+          hr.rotation.x = Math.atan2(climb, d - 0.04); hr.castShadow = true; scene.add(hr);
+        }
+        break;
+      }
+      case 'bed': {
+        if (!it.bunk) {
+          box(w, 0.15, d, C.wood, x, 0, z);
+          box(w, 0.45, 0.05, C.wood, x, 0, z);
+          bedding(x, z, w, d, 0.15, C.blanket);
+          break;
+        }
+        const top = 1.62, p = 0.06;
+        [[0, 0], [w - p, 0], [0, d - p], [w - p, d - p]].forEach(([a, b]) => box(p, top, p, C.wood, x + a, 0, z + b));
+        box(w, 0.06, d, C.wood, x, 0.09, z);
+        bedding(x, z, w, d, 0.15, C.blanket2, it.flip);
+        box(w, 0.06, d, C.wood, x, 1.14, z);
+        bedding(x, z, w, d, 1.2, C.blanket, it.flip);
+        const base = 1.2, X1 = x + w, Z1 = z + d;
+        // the opening sits at the wall corner on the stairs' end (foot end, or head end when flipped)
+        const zs = it.flip ? z + 0.03 : Z1 - 0.03, zo = it.flip ? Z1 - 0.03 : z + 0.03;
+        rail(x + p, zo, X1 - p, zo, base, top);
+        rail(x + 0.5, zs, X1 - p, zs, base, top);
+        box(0.05, top, 0.05, C.wood, x + 0.48, 0, it.flip ? z : Z1 - 0.05);
+        rail(x + 0.03, z + p, x + 0.03, Z1 - p, base, top);          // wall side
+        rail(X1 - 0.03, z + p, X1 - 0.03, Z1 - p, base, top);        // room side
+        break;
+      }
+    }
+  });
+
+  (function loop() { ctl.update(); renderer.render(scene, cam); requestAnimationFrame(loop); })();
+  ro.disconnect();
+  new ResizeObserver(() => {
+    if (!host.clientWidth) return;
+    renderer.setSize(host.clientWidth, host.clientHeight);
+    cam.aspect = host.clientWidth / host.clientHeight; cam.updateProjectionMatrix();
+  }).observe(host);
+}
+
+const grid = document.getElementById('grid');
+OPTIONS.forEach(o => grid.append(buildCard(o)));
+const rescale = () => grid.querySelectorAll('.card:not([hidden])').forEach(setScale);
+requestAnimationFrame(rescale);
+window.addEventListener('resize', rescale);
+
+document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
+  const v = b.dataset.view;
+  document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  grid.classList.toggle('single', v !== 'all');
+  grid.querySelectorAll('.card').forEach(c => { c.hidden = v !== 'all' && c.dataset.id !== v; });
+  rescale();
+}));
+</script>
+</body>
+</html>
